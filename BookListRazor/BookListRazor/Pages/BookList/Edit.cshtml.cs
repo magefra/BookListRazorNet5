@@ -6,36 +6,44 @@ using System.Threading.Tasks;
 
 namespace BookListRazor.Pages.BookList
 {
-    public class CreateModel : PageModel
+    public class EditModel : PageModel
     {
 
-        private readonly ApplicationDbContext _db;
+        private ApplicationDbContext _db;
 
 
-        public CreateModel(ApplicationDbContext db)
+        public EditModel(ApplicationDbContext db)
         {
             _db = db;
         }
 
+
         [BindProperty]
         public Book Book { get; set; }
 
-        public void OnGet()
+
+        public async Task OnGet(int id)
         {
+            Book = await _db.Books.FindAsync(id);
         }
 
         public async Task<IActionResult> OnPost()
         {
             if (ModelState.IsValid)
             {
-                _db.Books.Add(Book);
+                var bookFromDb = await _db.Books.FindAsync(Book.Id);
+                bookFromDb.Name = Book.Name;
+                bookFromDb.Author = Book.Author;
+                bookFromDb.ISBN = Book.ISBN;
+
+
                 await _db.SaveChangesAsync();
+
                 return RedirectToPage("Index");
+
             }
-            else
-            {
-                return Page();
-            }
+
+            return RedirectToPage();
         }
     }
 }
